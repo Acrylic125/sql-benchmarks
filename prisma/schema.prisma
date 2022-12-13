@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model user_with_id {
+  id                     Int                     @id @default(autoincrement())
+  email                  String                  @unique
+  username               String                  @unique
+  created_at             DateTime                @default(now())
+  updated_at             DateTime                @default(now()) @updatedAt
+  posts_with_user_id     post_with_user_id[]
+  bookmarks_with_user_id bookmark_with_user_id[]
+}
+
+model user_with_uuid {
+  id                       String                    @id @default(uuid()) @db.Uuid
+  email                    String                    @unique
+  username                 String                    @unique
+  created_at               DateTime                  @default(now())
+  updated_at               DateTime                  @default(now()) @updatedAt
+  posts_with_user_uuid     post_with_user_uuid[]
+  bookmarks_with_user_uuid bookmark_with_user_uuid[]
+}
+
+model post_with_user_id {
+  id                     Int                     @id @default(autoincrement())
+  title                  String
+  content                String
+  author_id              Int
+  author                 user_with_id            @relation(fields: [author_id], references: [id])
+  created_at             DateTime                @default(now())
+  updated_at             DateTime                @default(now()) @updatedAt
+  bookmarks_with_user_id bookmark_with_user_id[]
+
+  // @@index([author_id])
+}
+
+model post_with_user_uuid {
+  id                       Int                       @id @default(autoincrement())
+  title                    String
+  content                  String
+  author_id                String                    @db.Uuid
+  author                   user_with_uuid            @relation(fields: [author_id], references: [id])
+  created_at               DateTime                  @default(now())
+  updated_at               DateTime                  @default(now()) @updatedAt
+  bookmarks_with_user_uuid bookmark_with_user_uuid[]
+
+  // @@index([author_id])
+}
+
+model bookmark_with_user_id {
+  id         Int               @id @default(autoincrement())
+  post_id    Int
+  post       post_with_user_id @relation(fields: [post_id], references: [id])
+  user_id    Int
+  user       user_with_id      @relation(fields: [user_id], references: [id])
+  created_at DateTime          @default(now())
+  updated_at DateTime          @default(now()) @updatedAt
+
+  // @@index([user_id, post_id])
+}
+
+// Hello, There, Please, Work
+model bookmark_with_user_uuid {
+  id         Int                 @id @default(autoincrement())
+  post_id    Int
+  post       post_with_user_uuid @relation(fields: [post_id], references: [id])
+  user_id    String              @db.Uuid
+  user       user_with_uuid      @relation(fields: [user_id], references: [id])
+  created_at DateTime            @default(now())
+  updated_at DateTime            @default(now()) @updatedAt
+
+  // @@index([user_id, post_id])
+}
